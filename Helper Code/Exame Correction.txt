@@ -1,0 +1,27 @@
+CREATE PROCEDURE GetStudentModelAnswer     @Ex_No INT,  @Std_ID INT
+AS
+BEGIN TRY 
+IF NOT EXISTS (SELECT * FROM Exam WHERE Ex_No = @Ex_No) 
+BEGIN          
+SELECT 'The exam does not exist' AS 'ErrMessage'    
+END 
+ELSE IF NOT EXISTS (SELECT * FROM Student WHERE Std_ID = @Std_ID)  
+BEGIN           
+SELECT 'The student does not exist' AS 'ErrMessage'       
+END 
+ELSE  
+BEGIN    
+SELECT q.Qus_No, q.Qus_Text, C.Choice_Text [Student Answer],    
+CASE WHEN SE.Std_Score = 1 THEN 'True Answer'   
+     WHEN SE.Std_Score = 0 THEN 'Wrong Answer'    
+	 END AS [Answer Correction]        
+	 FROM Std_ExAnswer SE    INNER JOIN Exam E   ON E.Ex_No = SE.Ex_No   
+	 INNER JOIN Question Q 
+	 ON SE.Qus_No = Q.Qus_No INNER JOIN Choices C          
+	 ON Q.Qus_No = C.Qus_No AND C.Is_Correct = 1  
+	 WHERE SE.Std_ID = @Std_ID AND SE.Ex_No = @Ex_No AND se.Qus_No = c.Qus_No  
+	 END  
+	 END
+	 TRY BEGIN CATCH 
+	 SELECT ERROR_MESSAGE() AS errorMessage
+	 END CATCH
